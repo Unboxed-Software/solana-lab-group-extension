@@ -33,7 +33,7 @@ export async function createMintForGroup(
 	decimals: number,
 	maxMembers: number
 ): Promise<TransactionSignature> {
-	const extensions: any[] = [ExtensionType.TokenGroup]
+	const extensions: any[] = [ExtensionType.GroupPointer]
 	const mintLength = getMintLen(extensions)
 
 	const mintLamports =
@@ -49,6 +49,12 @@ export async function createMintForGroup(
 			lamports: mintLamports,
 			programId: TOKEN_2022_PROGRAM_ID,
 		}),
+		createInitializeGroupPointerInstruction(
+			mintKeypair.publicKey,
+			payer.publicKey,
+			mintKeypair.publicKey,
+			TOKEN_2022_PROGRAM_ID
+		),
 		createInitializeMintInstruction(
 			mintKeypair.publicKey,
 			decimals,
@@ -63,41 +69,6 @@ export async function createMintForGroup(
 		connection,
 		mintTransaction,
 		[payer, mintKeypair],
-		{commitment: 'finalized'}
-	)
-
-	console.log(
-		`Check the transaction at: https://explorer.solana.com/tx/${signature}?cluster=${cluster}`
-	)
-
-	const groupTransaction = new Transaction().add(
-		createInitializeGroupInstruction({
-			group: mintKeypair.publicKey,
-			maxSize: maxMembers,
-			mint: mintKeypair.publicKey,
-			mintAuthority: mintAuthority.publicKey,
-			programId: TOKEN_2022_PROGRAM_ID,
-			updateAuthority: updateAuthority.publicKey,
-		}),
-		createUpdateGroupMaxSizeInstruction({
-			group: mintKeypair.publicKey,
-			maxSize: maxMembers,
-			programId: TOKEN_2022_PROGRAM_ID,
-			updateAuthority: updateAuthority.publicKey,
-		}),
-		createUpdateGroupAuthorityInstruction({
-			currentAuthority: payer.publicKey,
-			group: mintKeypair.publicKey,
-			newAuthority: updateAuthority.publicKey,
-			programId: TOKEN_2022_PROGRAM_ID,
-		})
-	)
-
-	console.log('Sending group transaction...')
-	signature = await sendAndConfirmTransaction(
-		connection,
-		groupTransaction,
-		[mintAuthority, updateAuthority],
 		{commitment: 'finalized'}
 	)
 

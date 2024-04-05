@@ -25,7 +25,7 @@ async function main() {
 	 * Create a connection and initialize a keypair if one doesn't already exists.
 	 * If a keypair exists, airdrop a sol if needed.
 	 */
-	const connection = new Connection(clusterApiUrl(CLUSTER))
+	const connection = new Connection('http://127.0.0.1:8899')
 	const payer = await initializeKeypair(connection, {
 		envFileName: '.env',
 		envVariableName: 'PRIVATE_KEY',

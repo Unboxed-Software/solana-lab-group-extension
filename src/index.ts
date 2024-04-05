@@ -1,65 +1,26 @@
-import {initializeKeypair} from '@solana-developers/helpers'
-import {
-	Cluster,
-	Connection,
-	clusterApiUrl,
-	Keypair,
-	LAMPORTS_PER_SOL,
-} from '@solana/web3.js'
-import dotenv from 'dotenv'
-import {createMintForGroup} from './create-mint'
-import {
-	TOKEN_2022_PROGRAM_ID,
-	createAccount,
-	createMint,
-	tokenGroupInitializeGroup,
-	tokenGroupInitializeGroupWithRentTransfer,
-} from '@solana/spl-token'
-import {min} from 'bn.js'
-dotenv.config()
+import { initializeKeypair } from "@solana-developers/helpers";
+import { Connection, Keypair } from "@solana/web3.js";
+import dotenv from "dotenv";
+import { createMintForGroup } from "./create-mint";
+dotenv.config();
 
-const CLUSTER: Cluster = 'devnet'
+(async () => {
+  const connection = new Connection("http://localhost:8899", "confirmed");
+  const payer = await initializeKeypair(connection);
 
-async function main() {
-	/**
-	 * Create a connection and initialize a keypair if one doesn't already exists.
-	 * If a keypair exists, airdrop a sol if needed.
-	 */
-	const connection = new Connection(clusterApiUrl(CLUSTER))
-	const payer = await initializeKeypair(connection, {
-		envFileName: '.env',
-		envVariableName: 'PRIVATE_KEY',
-	})
+  const mintKeypair = Keypair.generate();
 
-	const mintAuthority = Keypair.generate()
-	const freezeAuthority = Keypair.generate()
-	const updateAuthority = Keypair.generate()
+  console.log(`public key: ${payer.publicKey.toBase58()}`);
 
-	console.log(`public key: ${payer.publicKey.toBase58()}`)
+  const signature = await createMintForGroup({
+    connection,
+    payer,
+    mintKeypair,
+    mintAuthority: payer.publicKey,
+    maxMembers: 10,
+  });
 
-	// const balance = await connection.getBalance(payer.publicKey)
-	// console.log('Balance: ', balance / LAMPORTS_PER_SOL)
-
-	const decimals = 9
-	const mintKeypair = Keypair.generate()
-	let mint = mintKeypair.publicKey
-	console.log(
-		'\nmint public key: ' + mintKeypair.publicKey.toBase58() + '\n\n'
-	)
-
-	const maxMembers = 1
-
-	createMintForGroup(
-		CLUSTER,
-		connection,
-		payer,
-		mintKeypair,
-		mintAuthority,
-		updateAuthority,
-		freezeAuthority,
-		decimals,
-		maxMembers
-	)
-}
-
-main()
+  console.log(
+    `Check the transaction at: https://explorer.solana.com/tx/${signature}?cluster=custom&customUrl=http://localhost:8899`,
+  );
+})();

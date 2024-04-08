@@ -6,7 +6,7 @@ import {
 	SystemProgram,
 	Transaction,
 	TransactionSignature,
-	PublicKey,
+	LAMPORTS_PER_SOL,
 } from '@solana/web3.js'
 
 import {
@@ -15,38 +15,49 @@ import {
 	getMintLen,
 	TOKEN_2022_PROGRAM_ID,
 	createInitializeGroupInstruction,
-	tokenGroupInitializeGroup,
 	createInitializeGroupPointerInstruction,
-	createUpdateGroupMaxSizeInstruction,
-	createUpdateGroupAuthorityInstruction,
-	createInitializeMemberInstruction,
+	TYPE_SIZE,
+	LENGTH_SIZE,
+	createInitializeMetadataPointerInstruction,
 } from '@solana/spl-token'
+import {
+	TokenMetadata,
+	createInitializeInstruction,
+	pack,
+} from '@solana/spl-token-metadata'
 
 export async function createMintForGroup(
 	cluster: Cluster,
 	connection: Connection,
 	payer: Keypair,
 	mintKeypair: Keypair,
-	mintAuthority: Keypair,
-	updateAuthority: Keypair,
-	freezeAuthority: Keypair,
 	decimals: number,
-	maxMembers: number
+	maxMembers: number,
+	metadata: TokenMetadata
 ): Promise<TransactionSignature> {
-	const extensions: any[] = [ExtensionType.GroupPointer]
+	const extensions: any[] = [
+		ExtensionType.GroupPointer,
+		ExtensionType.MetadataPointer,
+	]
+
+	const metadataLen = TYPE_SIZE + LENGTH_SIZE + pack(metadata).length
 	const mintLength = getMintLen(extensions)
+	const totalLen = mintLength + metadataLen
 
 	const mintLamports =
-		await connection.getMinimumBalanceForRentExemption(mintLength)
+		await connection.getMinimumBalanceForRentExemption(totalLen)
 
-	console.log('Creating a transaction with group instruction... ')
+	console.log(
+		'Creating a transaction with group instruction... ',
+		mintLamports / LAMPORTS_PER_SOL
+	)
 
 	const mintTransaction = new Transaction().add(
 		SystemProgram.createAccount({
 			fromPubkey: payer.publicKey,
 			newAccountPubkey: mintKeypair.publicKey,
 			space: mintLength,
-			lamports: mintLamports,
+			lamports: 2 * LAMPORTS_PER_SOL,
 			programId: TOKEN_2022_PROGRAM_ID,
 		}),
 		createInitializeGroupPointerInstruction(
@@ -55,13 +66,37 @@ export async function createMintForGroup(
 			mintKeypair.publicKey,
 			TOKEN_2022_PROGRAM_ID
 		),
+		createInitializeMetadataPointerInstruction(
+			mintKeypair.publicKey,
+			payer.publicKey,
+			mintKeypair.publicKey,
+			TOKEN_2022_PROGRAM_ID
+		),
 		createInitializeMintInstruction(
 			mintKeypair.publicKey,
 			decimals,
-			mintAuthority.publicKey,
-			freezeAuthority.publicKey,
+			payer.publicKey,
+			payer.publicKey,
 			TOKEN_2022_PROGRAM_ID
-		)
+		),
+		createInitializeGroupInstruction({
+			group: mintKeypair.publicKey,
+			maxSize: maxMembers,
+			mint: mintKeypair.publicKey,
+			mintAuthority: payer.publicKey,
+			programId: TOKEN_2022_PROGRAM_ID,
+			updateAuthority: payer.publicKey,
+		}),
+		createInitializeInstruction({
+			metadata: mintKeypair.publicKey,
+			mint: mintKeypair.publicKey,
+			mintAuthority: payer.publicKey,
+			name: metadata.name,
+			programId: TOKEN_2022_PROGRAM_ID,
+			symbol: metadata.symbol,
+			updateAuthority: payer.publicKey,
+			uri: metadata.uri,
+		})
 	)
 
 	console.log('Sending create mint transaction...')

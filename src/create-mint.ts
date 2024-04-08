@@ -1,12 +1,10 @@
 import {
-	Cluster,
 	sendAndConfirmTransaction,
 	Connection,
 	Keypair,
 	SystemProgram,
 	Transaction,
 	TransactionSignature,
-	LAMPORTS_PER_SOL,
 } from '@solana/web3.js'
 
 import {
@@ -19,6 +17,7 @@ import {
 	TYPE_SIZE,
 	LENGTH_SIZE,
 	createInitializeMetadataPointerInstruction,
+	TOKEN_GROUP_SIZE,
 } from '@solana/spl-token'
 import {
 	TokenMetadata,
@@ -26,8 +25,7 @@ import {
 	pack,
 } from '@solana/spl-token-metadata'
 
-export async function createMintForGroup(
-	cluster: Cluster,
+export async function createGroup(
 	connection: Connection,
 	payer: Keypair,
 	mintKeypair: Keypair,
@@ -42,22 +40,19 @@ export async function createMintForGroup(
 
 	const metadataLen = TYPE_SIZE + LENGTH_SIZE + pack(metadata).length
 	const mintLength = getMintLen(extensions)
-	const totalLen = mintLength + metadataLen
+	const totalLen = mintLength + metadataLen + TOKEN_GROUP_SIZE
 
 	const mintLamports =
 		await connection.getMinimumBalanceForRentExemption(totalLen)
 
-	console.log(
-		'Creating a transaction with group instruction... ',
-		mintLamports / LAMPORTS_PER_SOL
-	)
+	console.log('Creating a transaction with group instruction... ')
 
 	const mintTransaction = new Transaction().add(
 		SystemProgram.createAccount({
 			fromPubkey: payer.publicKey,
 			newAccountPubkey: mintKeypair.publicKey,
 			space: mintLength,
-			lamports: 2 * LAMPORTS_PER_SOL,
+			lamports: mintLamports,
 			programId: TOKEN_2022_PROGRAM_ID,
 		}),
 		createInitializeGroupPointerInstruction(
@@ -105,10 +100,6 @@ export async function createMintForGroup(
 		mintTransaction,
 		[payer, mintKeypair],
 		{commitment: 'finalized'}
-	)
-
-	console.log(
-		`Check the transaction at: https://explorer.solana.com/tx/${signature}?cluster=${cluster}`
 	)
 
 	return signature

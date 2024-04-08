@@ -7,7 +7,7 @@ import {
 	LAMPORTS_PER_SOL,
 } from '@solana/web3.js'
 import dotenv from 'dotenv'
-import {createMintForGroup} from './create-mint'
+import {createGroup} from './create-mint'
 import {TOKEN_2022_PROGRAM_ID, getTokenMetadata} from '@solana/spl-token'
 import {TokenMetadata} from '@solana/spl-token-metadata'
 import {uploadOffChainMetadata} from './helpers'
@@ -22,24 +22,11 @@ async function main() {
 	 */
 	const connection = new Connection('http://127.0.0.1:8899')
 	//const connection = new Connection(clusterApiUrl(CLUSTER))
-	const payer = await initializeKeypair(connection, {
-		envFileName: '.env',
-		envVariableName: 'PRIVATE_KEY',
-		minimumBalance: 10,
-		airdropAmount: 10,
-	})
-
-	const balance = await connection.getBalance(payer.publicKey, {
-		commitment: 'finalized',
-	})
-
-	console.log('Balance: ' + balance / LAMPORTS_PER_SOL)
-
-	const updateAuthority = Keypair.generate()
+	const payer = await initializeKeypair(connection)
 
 	console.log(`public key: ${payer.publicKey.toBase58()}`)
 
-	const decimals = 9
+	const decimals = 0
 	const maxMembers = 3
 
 	const mintKeypair = Keypair.generate()
@@ -50,7 +37,7 @@ async function main() {
 
 	const metadata: TokenMetadata = {
 		name: 'cool-cats',
-		updateAuthority: updateAuthority.publicKey,
+		updateAuthority: payer.publicKey,
 		mint,
 		symbol: 'MEOW',
 		uri: 'https://solana.com/',
@@ -60,8 +47,7 @@ async function main() {
 		],
 	}
 
-	await createMintForGroup(
-		CLUSTER,
+	await createGroup(
 		connection,
 		payer,
 		mintKeypair,

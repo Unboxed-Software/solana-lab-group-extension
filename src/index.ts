@@ -1,16 +1,8 @@
-import {airdropIfRequired, initializeKeypair} from '@solana-developers/helpers'
-import {
-	Cluster,
-	Connection,
-	clusterApiUrl,
-	Keypair,
-	LAMPORTS_PER_SOL,
-} from '@solana/web3.js'
+import {initializeKeypair} from '@solana-developers/helpers'
+import {Cluster, Connection, Keypair} from '@solana/web3.js'
 import dotenv from 'dotenv'
 import {createGroup} from './create-mint'
-import {TOKEN_2022_PROGRAM_ID, getTokenMetadata} from '@solana/spl-token'
 import {TokenMetadata} from '@solana/spl-token-metadata'
-import {uploadOffChainMetadata} from './helpers'
 dotenv.config()
 
 const CLUSTER: Cluster = 'devnet'
@@ -21,7 +13,7 @@ async function main() {
 	 * If a keypair exists, airdrop a sol if needed.
 	 */
 	const connection = new Connection('http://127.0.0.1:8899')
-	//const connection = new Connection(clusterApiUrl(CLUSTER))
+
 	const payer = await initializeKeypair(connection)
 
 	console.log(`public key: ${payer.publicKey.toBase58()}`)
@@ -47,7 +39,7 @@ async function main() {
 		],
 	}
 
-	await createGroup(
+	const signature = await createGroup(
 		connection,
 		payer,
 		mintKeypair,
@@ -56,14 +48,9 @@ async function main() {
 		metadata
 	)
 
-	const data = await getTokenMetadata(
-		connection,
-		mint,
-		'finalized',
-		TOKEN_2022_PROGRAM_ID
+	console.log(
+		`Created collection mint with metadata. Signature: ${signature}`
 	)
-
-	console.log('metadata: ', data)
 }
 
 main()

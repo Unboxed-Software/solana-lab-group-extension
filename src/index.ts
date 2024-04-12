@@ -3,6 +3,8 @@ import {Cluster, Connection, Keypair} from '@solana/web3.js'
 import dotenv from 'dotenv'
 import {createGroup} from './create-mint'
 import {TokenMetadata} from '@solana/spl-token-metadata'
+import {uploadOffChainMetadata} from './helpers'
+
 dotenv.config()
 
 const CLUSTER: Cluster = 'devnet'
@@ -17,32 +19,49 @@ const payer = await initializeKeypair(connection)
 
 console.log(`public key: ${payer.publicKey.toBase58()}`)
 
+const collectionMintKeypair = Keypair.generate()
+let mint = collectionMintKeypair.publicKey
+console.log(
+	'\nmint public key: ' + collectionMintKeypair.publicKey.toBase58() + '\n\n'
+)
+
+const collectionMetadata = {
+	imagePath: 'src/assets/collection.jpeg',
+	tokenName: 'cool-cats-collection',
+	tokenDescription: 'Collection of Cool Cat NFTs',
+	tokenSymbol: 'MEOWs',
+	tokenExternalUrl: 'https://solana.com/',
+	tokenAdditionalMetadata: undefined,
+	tokenUri: '',
+	metadataFileName: 'collection.json',
+}
+
+collectionMetadata.tokenUri = await uploadOffChainMetadata(
+	collectionMetadata,
+	payer
+)
+
+const collectionTokenMetadata: TokenMetadata = {
+	name: collectionMetadata.tokenName,
+	mint: collectionMintKeypair.publicKey,
+	symbol: collectionMetadata.tokenSymbol,
+	uri: collectionMetadata.tokenUri,
+	updateAuthority: payer.publicKey,
+	additionalMetadata: Object.entries(
+		collectionMetadata.tokenAdditionalMetadata || []
+	).map(([trait_type, value]) => [trait_type, value]),
+}
+
 const decimals = 0
 const maxMembers = 3
-
-const mintKeypair = Keypair.generate()
-let mint = mintKeypair.publicKey
-console.log('\nmint public key: ' + mintKeypair.publicKey.toBase58() + '\n\n')
-
-const metadata: TokenMetadata = {
-	name: 'cool-cats',
-	updateAuthority: payer.publicKey,
-	mint,
-	symbol: 'MEOW',
-	uri: 'https://solana.com/',
-	additionalMetadata: [
-		['species', 'Cat'],
-		['breed', 'Cool'],
-	],
-}
 
 const signature = await createGroup(
 	connection,
 	payer,
-	mintKeypair,
+	collectionMintKeypair,
 	decimals,
 	maxMembers,
-	metadata
+	collectionTokenMetadata
 )
 
 console.log(`Created collection mint with metadata. Signature: ${signature}`)

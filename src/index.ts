@@ -13,4 +13,6 @@ const connection = new Connection(clusterApiUrl(CLUSTER))
 
 const payer = await initializeKeypair(connection)
 
-// CREATE GROUP MINT WITH METADATA
+// DEFINE GROUP METADATA
+
+// CREATE GROUP MINT

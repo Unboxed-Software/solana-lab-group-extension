@@ -1,5 +1,5 @@
 import {initializeKeypair} from '@solana-developers/helpers'
-import {Cluster, Connection, Keypair} from '@solana/web3.js'
+import {Cluster, Connection, Keypair, LAMPORTS_PER_SOL} from '@solana/web3.js'
 import dotenv from 'dotenv'
 import {createGroup} from './create-mint'
 import {TokenMetadata} from '@solana/spl-token-metadata'
@@ -15,14 +15,19 @@ const CLUSTER: Cluster = 'devnet'
  */
 const connection = new Connection('http://127.0.0.1:8899')
 
-const payer = await initializeKeypair(connection)
+const payer = await initializeKeypair(connection, {
+	keypairPath: '/home/aditya-kulkarni/.config/solana/id.json',
+})
 
-console.log(`public key: ${payer.publicKey.toBase58()}`)
+console.log(
+	`public key: ${payer.publicKey.toBase58()}`,
+	await connection.getBalance(payer.publicKey)
+)
 
 const collectionMintKeypair = Keypair.generate()
 
 const collectionMetadata = {
-	imagePath: 'src/assets/collection.jpeg',
+	imagePath: 'collection.jpeg',
 	tokenName: 'cool-cats-collection',
 	tokenDescription: 'Collection of Cool Cat NFTs',
 	tokenSymbol: 'MEOWs',

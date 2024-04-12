@@ -20,10 +20,6 @@ const payer = await initializeKeypair(connection)
 console.log(`public key: ${payer.publicKey.toBase58()}`)
 
 const collectionMintKeypair = Keypair.generate()
-let mint = collectionMintKeypair.publicKey
-console.log(
-	'\nmint public key: ' + collectionMintKeypair.publicKey.toBase58() + '\n\n'
-)
 
 const collectionMetadata = {
 	imagePath: 'src/assets/collection.jpeg',

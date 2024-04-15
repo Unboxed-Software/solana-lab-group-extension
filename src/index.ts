@@ -11,7 +11,9 @@ const CLUSTER: Cluster = 'devnet'
  */
 const connection = new Connection(clusterApiUrl(CLUSTER))
 
-const payer = await initializeKeypair(connection)
+const payer = await initializeKeypair(connection, {
+	keypairPath: 'path-to-solana-keypair',
+})
 
 // DEFINE GROUP METADATA
 

@@ -16,7 +16,7 @@ const CLUSTER: Cluster = 'devnet'
 const connection = new Connection(clusterApiUrl(CLUSTER))
 
 const payer = await initializeKeypair(connection, {
-	keypairPath: '/home/aditya-kulkarni/.config/solana/id.json',
+	keypairPath: 'path-to-solana-keypair',
 })
 
 console.log(

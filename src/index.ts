@@ -24,6 +24,7 @@ console.log(
 	await connection.getBalance(payer.publicKey)
 )
 
+// DEFINE GROUP METADATA
 const collectionMintKeypair = Keypair.generate()
 
 const collectionMetadata = {
@@ -53,6 +54,7 @@ const collectionTokenMetadata: TokenMetadata = {
 	).map(([trait_type, value]) => [trait_type, value]),
 }
 
+// CREATE GROUP MINT
 const decimals = 0
 const maxMembers = 3
 

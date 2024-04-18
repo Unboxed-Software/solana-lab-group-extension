@@ -56,9 +56,7 @@ export async function uploadOffChainMetadata(
 
 	const irys = await getIrysArweave(payer.secretKey)
 
-	const imageUploadReceipt = await irys.uploadFile(
-		path.join(__dirname, `/assets/${imagePath}`)
-	)
+	const imageUploadReceipt = await irys.uploadFile(imagePath)
 
 	const metadata = {
 		name: tokenName,

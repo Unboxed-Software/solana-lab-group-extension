@@ -16,7 +16,7 @@ const CLUSTER: Cluster = 'devnet'
 const connection = new Connection(clusterApiUrl(CLUSTER))
 
 const payer = await initializeKeypair(connection, {
-	keypairPath: 'path-to-solana-keypair',
+	//keypairPath: 'path-to-solana-keypair',
 })
 
 console.log(
@@ -28,7 +28,7 @@ console.log(
 const collectionMintKeypair = Keypair.generate()
 
 const collectionMetadata = {
-	imagePath: 'collection.jpeg',
+	imagePath: 'src/assets/collection.jpeg',
 	tokenName: 'cool-cats-collection',
 	tokenDescription: 'Collection of Cool Cat NFTs',
 	tokenSymbol: 'MEOWs',

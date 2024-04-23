@@ -1,4 +1,4 @@
-import {Connection, Keypair} from '@solana/web3.js'
+import {Connection, Keypair, LAMPORTS_PER_SOL} from '@solana/web3.js'
 import Irys from '@irys/sdk'
 import fs from 'fs'
 import path from 'path'
@@ -28,21 +28,37 @@ function formatIrysUrl(id: string) {
 	return `https://gateway.irys.xyz/${id}`
 }
 
-const getIrysArweave = async (secretKey: Uint8Array) => {
+const getIrysArweave = async (
+	secretKey: Uint8Array,
+	devnetSecretKey: Uint8Array
+) => {
 	const irys = new Irys({
 		network: 'devnet',
 		token: 'solana',
-		key: secretKey,
+		key: devnetSecretKey,
 		config: {
 			providerUrl: 'https://api.devnet.solana.com',
 		},
 	})
+
+	const balance = await irys.getBalance(irys.address as string)
+	if (Number(irys.utils.toAtomic(balance)) < LAMPORTS_PER_SOL) {
+		try {
+			const fundTx = await irys.fund(irys.utils.toAtomic(1))
+			console.log(
+				`Successfully funded ${irys.utils.fromAtomic(fundTx.quantity)} ${irys.token}`
+			)
+		} catch (e) {
+			console.log('Error uploading data ', e)
+		}
+	}
 	return irys
 }
 
 export async function uploadOffChainMetadata(
 	inputs: UploadOffChainMetadataInputs,
-	payer: Keypair
+	payer: Keypair,
+	devnetKeypair: Keypair
 ) {
 	const {
 		tokenName,
@@ -54,7 +70,7 @@ export async function uploadOffChainMetadata(
 		metadataFileName,
 	} = inputs
 
-	const irys = await getIrysArweave(payer.secretKey)
+	const irys = await getIrysArweave(payer.secretKey, devnetKeypair.secretKey)
 
 	const imageUploadReceipt = await irys.uploadFile(imagePath)
 

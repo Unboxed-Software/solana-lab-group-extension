@@ -16,7 +16,7 @@ const CLUSTER: Cluster = 'devnet'
 const connection = new Connection(clusterApiUrl(CLUSTER))
 
 const payer = await initializeKeypair(connection, {
-	//keypairPath: 'path-to-solana-keypair',
+	keypairPath: 'path-to-solana-keypair',
 })
 
 console.log(
@@ -24,9 +24,9 @@ console.log(
 	await connection.getBalance(payer.publicKey)
 )
 
-// DEFINE GROUP METADATA
-const collectionMintKeypair = makeKeypairs(1)
+const [collectionMintKeypair] = makeKeypairs(1)
 
+// DEFINE GROUP METADATA
 const collectionMetadata = {
 	imagePath: 'src/assets/collection.jpeg',
 	tokenName: 'cool-cats-collection',
@@ -54,10 +54,10 @@ const collectionTokenMetadata: TokenMetadata = {
 	).map(([trait_type, value]) => [trait_type, value]),
 }
 
-// CREATE GROUP MINT
 const decimals = 0
 const maxMembers = 3
 
+// CREATE GROUP MINT
 const signature = await createGroup(
 	connection,
 	payer,

@@ -1,4 +1,4 @@
-import {initializeKeypair} from '@solana-developers/helpers'
+import {initializeKeypair, makeKeypairs} from '@solana-developers/helpers'
 import {Cluster, Connection, Keypair, clusterApiUrl} from '@solana/web3.js'
 import dotenv from 'dotenv'
 import {createGroup} from './create-mint'
@@ -24,7 +24,7 @@ console.log(
 	await connection.getBalance(payer.publicKey)
 )
 
-const collectionMintKeypair = Keypair.generate()
+const [collectionMintKeypair] = makeKeypairs(1)
 
 const collectionMetadata = {
 	imagePath: 'src/assets/collection.jpeg',

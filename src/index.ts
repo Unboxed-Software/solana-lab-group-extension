@@ -1,5 +1,5 @@
 import {initializeKeypair, makeKeypairs} from '@solana-developers/helpers'
-import {Cluster, Connection, Keypair, clusterApiUrl} from '@solana/web3.js'
+import {Cluster, Connection, clusterApiUrl} from '@solana/web3.js'
 import dotenv from 'dotenv'
 import {createGroup} from './create-mint'
 import {TokenMetadata} from '@solana/spl-token-metadata'

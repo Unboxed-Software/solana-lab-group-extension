@@ -5,7 +5,7 @@ import {
 	SystemProgram,
 	Transaction,
 	TransactionSignature,
-} from '@solana/web3.js'
+} from "@solana/web3.js"
 
 import {
 	ExtensionType,
@@ -18,14 +18,14 @@ import {
 	LENGTH_SIZE,
 	createInitializeMetadataPointerInstruction,
 	TOKEN_GROUP_SIZE,
-} from '@solana/spl-token'
+} from "@solana/spl-token"
 import {
 	TokenMetadata,
 	createInitializeInstruction,
 	pack,
-} from '@solana/spl-token-metadata'
+} from "@solana/spl-token-metadata"
 
-export async function createGroup(
+export async function createTokenExtensionMintWithGroupPointer(
 	connection: Connection,
 	payer: Keypair,
 	mintKeypair: Keypair,
@@ -45,7 +45,7 @@ export async function createGroup(
 	const mintLamports =
 		await connection.getMinimumBalanceForRentExemption(totalLen)
 
-	console.log('Creating a transaction with group instruction... ')
+	console.log("Creating a transaction with group instruction... ")
 
 	const mintTransaction = new Transaction().add(
 		SystemProgram.createAccount({
@@ -94,12 +94,12 @@ export async function createGroup(
 		})
 	)
 
-	console.log('Sending create mint transaction...')
+	console.log("Sending create mint transaction...")
 	let signature = await sendAndConfirmTransaction(
 		connection,
 		mintTransaction,
 		[payer, mintKeypair],
-		{commitment: 'finalized'}
+		{commitment: "finalized"}
 	)
 
 	return signature

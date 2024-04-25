@@ -2,6 +2,7 @@ import {initializeKeypair} from '@solana-developers/helpers'
 import {Cluster, Connection, clusterApiUrl} from '@solana/web3.js'
 import {uploadOffChainMetadata} from './helpers'
 import {TokenMetadata} from '@solana/spl-token-metadata'
+//import {createGroup} from './create-mint' // This will be uncommented later
 import dotenv from 'dotenv'
 dotenv.config()
 
